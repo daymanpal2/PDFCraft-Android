@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android Image to PDF Converter - Emulator & Source Code</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter for UI, Fira Code for code blocks -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons for modern UI styling -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF Library for real PDF compilation inside the emulator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e1e2e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3f3f5f;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #57577f;
+        }
+        /* Simulated Android Notch and Screen ratio */
+        .android-screen {
+            aspect-ratio: 9 / 19.5;
+            max-height: 820px;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-950 border-b border-slate-800 px-6 py-4 flex flex-wrap justify-between items-center gap-4 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="bg-emerald-500 text-slate-950 p-2 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <i class="fa-brands fa-android text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                    PDFCraft Android App
+                    <span class="text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">v1.0.0</span>
+                </h1>
+                <p class="text-xs text-slate-400">Interactive Simulator & Native Android Source Code Project</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3 text-sm">
+            <span class="flex items-center gap-1.5 text-slate-300">
+                <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Web Engine Active
+            </span>
+            <div class="h-4 w-px bg-slate-800"></div>
+            <span class="text-xs text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-md border border-slate-700/50">Target SDK 34 (Android 14)</span>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
+        
+        <!-- Left Pane: Android Production Code Hub -->
+        <section class="w-full lg:w-[58%] border-r border-slate-800 flex flex-col bg-slate-950 overflow-hidden">
+            <div class="bg-slate-900 border-b border-slate-800 p-4 flex flex-wrap justify-between items-center gap-2 shrink-0">
+                <span class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-code text-indigo-400"></i>
+                    Native Production Source Code
+                </span>
+                <!-- Tab Controls -->
+                <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+                    <button onclick="switchTab('kotlin-ui')" id="tab-btn-kotlin-ui" class="tab-btn active bg-indigo-600 text-white px-3 py-1.5 rounded-md font-medium transition-all">
+                        Kotlin UI
+                    </button>
+                    <button onclick="switchTab('pdf-engine')" id="tab-btn-pdf-engine" class="tab-btn text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded-md font-medium transition-all">
+                        PDF Engine
+                    </button>
+                    <button onclick="switchTab('manifest')" id="tab-btn-manifest" class="tab-btn text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded-md font-medium transition-all">
+                        Manifest
+                    </button>
+                    <button onclick="switchTab('gradle')" id="tab-btn-gradle" class="tab-btn text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded-md font-medium transition-all">
+                        Gradle
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Code Panels Container -->
+            <div class="flex-1 overflow-y-auto p-5 relative bg-slate-950">
+                <!-- Copy To Clipboard Notification Toast -->
+                <div id="copy-toast" class="absolute top-4 right-4 bg-emerald-500 text-slate-950 text-xs font-semibold px-3 py-2 rounded shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check"></i> Code Copied!
+                </div>
+
+                <!-- Tab 1: Compose UI Code -->
+                <div id="tab-content-kotlin-ui" class="tab-content block">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-folder-open text-amber-500"></i> app/src/main/java/.../ui/MainActivity.kt
+                        </span>
+                        <button onclick="copyCode('code-kotlin-ui')" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 bg-indigo-500/10 hover:bg-indigo-500/20 px-2 py-1 rounded transition-colors">
+                            <i class="fa-regular fa-copy"></i> Copy Code
+                        </button>
+                    </div>
+                    <pre class="rounded-lg bg-slate-900 border border-slate-800 p-4 overflow-x-auto text-[13px] leading-relaxed text-slate-300 code-font shadow-inner"><code id="code-kotlin-ui">package com.pdfcraft.imagetopdf
+
+import android.net.Uri
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
+import coil.compose.AsyncImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            MaterialTheme(colorScheme = darkColorScheme()) {
+                ImageToPdfApp()
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun ImageToPdfApp() {
+        val context = LocalContext.current
+        var selectedImages by remember { mutableStateOf<List&lt;Uri&gt;>(emptyList()) }
+        var isConverting by remember { mutableStateOf(false) }
+        
+        // Settings State
+        var pageSize by remember { mutableStateOf("A4") }
+        var isLandscape by remember { mutableStateOf(false) }
+        var compressionQuality by remember { mutableFloatStateOf(80f) }
+
+        val imagePickerLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetMultipleContents()
+        ) { uris ->
+            if (uris.isNotEmpty()) {
+                selectedImages = selectedImages + uris
+            }
+        }
+
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("PDFCraft - Image to PDF", fontWeight = FontWeight.Bold) },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1E1E2E))
+                )
+            },
+            floatingActionButton = {
+                if (selectedImages.isNotEmpty() && !isConverting) {
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            isConverting = true
+                            lifecycleScope.launch(Dispatchers.Default) {
+                                try {
+                                    val pdfFile = File(context.cacheDir, "Converted_${System.currentTimeMillis()}.pdf")
+                                    PdfConverter.convertImagesToPdf(
+                                        context = context,
+                                        imageUris = selectedImages,
+                                        outputFile = pdfFile,
+                                        pageSizeSetting = pageSize,
+                                        isLandscape = isLandscape,
+                                        quality = compressionQuality.toInt()
+                                    )
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(context, "PDF saved to: ${pdfFile.absolutePath}", Toast.LENGTH_LONG).show()
+                                        isConverting = false
+                                    }
+                                } catch (e: Exception) {
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                        isConverting = false
+                                    }
+                                }
+                            }
+                        },
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ) {
+                        Icon(Icons.Filled.Build, contentDescription = "Convert")
+                        Spacer(Modifier.width(8.dp))
+                        Text("Convert to PDF")
+                    }
+                }
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .background(Color(0xFF121214))
+                    .padding(16.dp)
+            ) {
+                // Settings Section
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E2E))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("PDF Conversion Settings", fontWeight = FontWeight.Bold, color = Color.White)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // Page Size Row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Page Format", color = Color.Gray)
+                            // Basic dropdown selector mockup for Compose UI
+                            Button(onClick = { pageSize = if (pageSize == "A4") "Letter" else "A4" }) {
+                                Text(pageSize)
+                            }
+                        }
+                    }
+                }
+
+                // Image Grid Area
+                if (selectedImages.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Button(onClick = { imagePickerLauncher.launch("image/*") }) {
+                            Text("Select Images to Convert")
+                        }
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(selectedImages) { uri ->
+                            Box(modifier = Modifier.aspectRatio(1f).clip(RoundedCornerShape(8.dp))) {
+                                AsyncImage(
+                                    model = uri,
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}</code></pre>
+                </div>
+
+                <!-- Tab 2: Native PDF Engine -->
+                <div id="tab-content-pdf-engine" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-folder-open text-amber-500"></i> app/src/main/java/.../engine/PdfConverter.kt
+                        </span>
+                        <button onclick="copyCode('code-pdf-engine')" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 bg-indigo-500/10 hover:bg-indigo-500/20 px-2 py-1 rounded transition-colors">
+                            <i class="fa-regular fa-copy"></i> Copy Code
+                        </button>
+                    </div>
+                    <pre class="rounded-lg bg-slate-900 border border-slate-800 p-4 overflow-x-auto text-[13px] leading-relaxed text-slate-300 code-font shadow-inner"><code id="code-pdf-engine">package com.pdfcraft.imagetopdf.engine
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.pdf.PdfDocument
+import android.net.Uri
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+
+object PdfConverter {
+
+    /**
+     * Efficiently reads, processes, crops, and renders a list of Uri images into
+     * a fully compliant Android PDF document on a background thread.
+     */
+    fun convertImagesToPdf(
+        context: Context,
+        imageUris: List&lt;Uri&gt;,
+        outputFile: File,
+        pageSizeSetting: String,
+        isLandscape: Boolean,
+        quality: Int
+    ) {
+        val pdfDocument = PdfDocument()
+
+        // Page dimensions in Points (1 inch = 72 points)
+        // A4: 595 x 842 points | Letter: 612 x 792 points
+        val pageWidth = if (pageSizeSetting == "A4") {
+            if (isLandscape) 842 else 595
+        } else {
+            if (isLandscape) 792 else 612
+        }
+        val pageHeight = if (pageSizeSetting == "A4") {
+            if (isLandscape) 595 else 842
+        } else {
+            if (isLandscape) 612 else 792
+        }
+
+        imageUris.forEachIndexed { index, uri ->
+            val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+            val originalBitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
+
+            if (originalBitmap != null) {
+                // Initialize page layout and start rendering
+                val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, index + 1).create()
+                val page = pdfDocument.startPage(pageInfo)
+                val canvas: Canvas = page.canvas
+
+                // Calculate Aspect Ratio Scales to fit/fill
+                val scaleX = pageWidth.toFloat() / originalBitmap.width
+                val scaleY = pageHeight.toFloat() / originalBitmap.height
+                val finalScale = Math.min(scaleX, scaleY)
+
+                val scaledWidth = originalBitmap.width * finalScale
+                val scaledHeight = originalBitmap.height * finalScale
+
+                // Center Image in Page margins
+                val left = (pageWidth - scaledWidth) / 2f
+                val top = (pageHeight - scaledHeight) / 2f
+
+                // Scale down bitmap to save memory & storage before drawing
+                val scaledBitmap = Bitmap.createScaledBitmap(
+                    originalBitmap,
+                    scaledWidth.toInt(),
+                    scaledHeight.toInt(),
+                    true
+                )
+
+                val paint = Paint().apply {
+                    isAntiAlias = true
+                    isFilterBitmap = true
+                }
+
+                // Draw image on canvas
+                canvas.drawBitmap(scaledBitmap, left, top, paint)
+                
+                pdfDocument.finishPage(page)
+
+                // Clean up Heap to avoid Native memory OutOfMemoryError
+                if (scaledBitmap != originalBitmap) {
+                    scaledBitmap.recycle()
+                }
+                originalBitmap.recycle()
+            }
+        }
+
+        // Stream and save compiled PDF to disk
+        val outputStream = FileOutputStream(outputFile)
+        pdfDocument.writeTo(outputStream)
+        pdfDocument.close()
+        outputStream.flush()
+        outputStream.close()
+    }
+}</code></pre>
+                </div>
+
+                <!-- Tab 3: Manifest -->
+                <div id="tab-content-manifest" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-folder-open text-amber-500"></i> app/src/main/AndroidManifest.xml
+                        </span>
+                        <button onclick="copyCode('code-manifest')" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 bg-indigo-500/10 hover:bg-indigo-500/20 px-2 py-1 rounded transition-colors">
+                            <i class="fa-regular fa-copy"></i> Copy Code
+                        </button>
+                    </div>
+                    <pre class="rounded-lg bg-slate-900 border border-slate-800 p-4 overflow-x-auto text-[13px] leading-relaxed text-slate-300 code-font shadow-inner"><code id="code-manifest">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"&gt;
+
+    &lt;!-- Storage permissions for Android 13 (API 33) and below --&gt;
+    &lt;uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" /&gt;
+    &lt;uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" /&gt;
+    
+    &lt;!-- Media Access for Android 13+ --&gt;
+    &lt;uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /&gt;
+
+    &lt;application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="PDFCraft"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.PDFCraft"
+        tools:targetApi="34"&gt;
+        
+        &lt;activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.PDFCraft"&gt;
+            &lt;intent-filter&gt;
+                &lt;action android:name="android.intent.action.MAIN" /&gt;
+                &lt;category android:name="android.intent.category.LAUNCHER" /&gt;
+            &lt;/intent-filter&gt;
+        &lt;/activity&gt;
+        
+    &lt;/application&gt;
+&lt;/manifest&gt;</code></pre>
+                </div>
+
+                <!-- Tab 4: Build.gradle -->
+                <div id="tab-content-gradle" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-folder-open text-amber-500"></i> app/build.gradle.kts
+                        </span>
+                        <button onclick="copyCode('code-gradle')" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 bg-indigo-500/10 hover:bg-indigo-500/20 px-2 py-1 rounded transition-colors">
+                            <i class="fa-regular fa-copy"></i> Copy Code
+                        </button>
+                    </div>
+                    <pre class="rounded-lg bg-slate-900 border border-slate-800 p-4 overflow-x-auto text-[13px] leading-relaxed text-slate-300 code-font shadow-inner"><code id="code-gradle">plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+}
+
+android {
+    namespace = "com.pdfcraft.imagetopdf"
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "com.pdfcraft.imagetopdf"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+    buildFeatures {
+        compose = true
+    }
+}
+
+dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    
+    // Jetpack Compose BOM
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+
+    // Image loading with Coil
+    implementation("io.coil-kt:coil-compose:2.5.0")
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Pane: Interactive Live Web Android Emulator -->
+        <section class="w-full lg:w-[42%] flex flex-col items-center justify-center p-6 bg-slate-900 overflow-y-auto">
+            
+            <div class="mb-2 text-center">
+                <span class="text-xs bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-3 py-1 rounded-full font-medium inline-block mb-1">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Interactive Simulator
+                </span>
+                <p class="text-xs text-slate-400">Add photos, customize parameters & build a real PDF</p>
+            </div>
+
+            <!-- Styled Android Mock Device -->
+            <div class="relative w-full max-w-[340px] android-screen bg-slate-950 rounded-[44px] shadow-2xl shadow-indigo-950/40 border-[8px] border-slate-800 p-2 overflow-hidden flex flex-col shrink-0">
+                
+                <!-- Front Camera Notch -->
+                <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-slate-800 rounded-full z-50 flex items-center justify-center">
+                    <div class="w-2.5 h-2.5 bg-slate-950 rounded-full border border-slate-800 ml-4"></div>
+                    <div class="w-1.5 h-1.5 bg-slate-900 rounded-full ml-auto mr-4"></div>
+                </div>
+
+                <!-- Android Top Status Bar -->
+                <div class="h-8 shrink-0 flex items-center justify-between px-6 text-[11px] font-semibold text-slate-300 select-none z-40">
+                    <span id="android-clock">10:00</span>
+                    <div class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-wifi text-[10px]"></i>
+                        <i class="fa-solid fa-signal text-[10px]"></i>
+                        <span class="text-[9px]">5G</span>
+                        <div class="flex items-center gap-0.5 ml-0.5">
+                            <span class="text-[9px] mr-0.5">88%</span>
+                            <i class="fa-solid fa-battery-three-quarters text-xs text-emerald-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Emulator Content Screens Wrapper -->
+                <div class="flex-1 rounded-[32px] bg-slate-900 overflow-hidden flex flex-col relative text-slate-200">
+                    
+                    <!-- Screen 1: Dashboard Home -->
+                    <div id="screen-home" class="screen-view absolute inset-0 flex flex-col p-4">
+                        <div class="flex items-center justify-between mt-3 mb-6">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-500 text-slate-900 flex items-center justify-center font-bold text-sm">
+                                    PC
+                                </div>
+                                <span class="font-bold text-slate-100 text-base">PDFCraft</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="toggleInfoBottomSheet()" class="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xs text-slate-300">
+                                    <i class="fa-solid fa-info"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Statistics Header -->
+                        <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl p-4 mb-5 shadow-lg shadow-indigo-900/30">
+                            <h3 class="text-xs font-semibold uppercase tracking-wider text-indigo-200">System Ready</h3>
+                            <p class="text-xl font-bold text-white mt-0.5">Convert Images</p>
+                            <div class="mt-3 flex items-center justify-between text-[11px] text-indigo-100 bg-white/10 px-2.5 py-1.5 rounded-lg">
+                                <span class="flex items-center gap-1"><i class="fa-regular fa-image"></i> High Res</span>
+                                <span>|</span>
+                                <span class="flex items-center gap-1"><i class="fa-solid fa-shield-halved"></i> 100% Secure</span>
+                            </div>
+                        </div>
+
+                        <!-- Core CTA Options -->
+                        <div class="flex-1 flex flex-col gap-3 justify-center">
+                            <!-- Option 1: Mock Sandbox Upload -->
+                            <div class="bg-slate-800/60 border border-slate-700/60 hover:bg-slate-800 rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all hover:-translate-y-0.5 group">
+                                <input type="file" id="emulator-file-picker" multiple accept="image/*" class="hidden" onchange="handleImageSelection(event)">
+                                <label for="emulator-file-picker" class="w-full cursor-pointer py-2">
+                                    <div class="w-10 h-10 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                                        <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+                                    </div>
+                                    <span class="text-xs font-semibold text-slate-200">Upload Your Images</span>
+                                    <p class="text-[9px] text-slate-400 mt-1">Accepts multiple PNG, JPG, JPEG files</p>
+                                </label>
+                            </div>
+
+                            <!-- Option 2: Preloaded Presets -->
+                            <button onclick="loadSamplePresetImages()" class="bg-slate-800/40 border border-dashed border-slate-700 hover:bg-slate-800/80 rounded-xl p-3 flex items-center gap-3 text-left transition-all">
+                                <div class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+                                    <i class="fa-regular fa-images"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-semibold text-slate-200 block">Try Preset Samples</span>
+                                    <p class="text-[9px] text-slate-400">Instantly test PDF building without files</p>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Features overview grid -->
+                        <div class="mt-4 grid grid-cols-2 gap-2 text-[10px] text-slate-400">
+                            <div class="flex items-center gap-1.5"><i class="fa-solid fa-crop-simple text-indigo-400"></i> No Watermarks</div>
+                            <div class="flex items-center gap-1.5"><i class="fa-solid fa-compress-arrows-alt text-emerald-400"></i> Low File Size</div>
+                            <div class="flex items-center gap-1.5"><i class="fa-solid fa-rotate-left text-amber-400"></i> Rotation Tools</div>
+                            <div class="flex items-center gap-1.5"><i class="fa-solid fa-lock text-rose-400"></i> Secure Offline</div>
+                        </div>
+                    </div>
+
+                    <!-- Screen 2: Arrangement & Editor -->
+                    <div id="screen-arrange" class="screen-view absolute inset-0 flex flex-col p-4 hidden">
+                        <div class="flex items-center justify-between mt-3 mb-4 border-b border-slate-800 pb-2">
+                            <button onclick="navBackToHome()" class="text-slate-400 hover:text-slate-200 text-xs flex items-center gap-1">
+                                <i class="fa-solid fa-chevron-left"></i> Back
+                            </button>
+                            <span class="text-xs font-semibold text-slate-300">Editor (<span id="arrange-count">0</span>)</span>
+                            <button onclick="openSettingsSheet()" class="text-slate-400 hover:text-slate-200 text-xs">
+                                <i class="fa-solid fa-sliders text-indigo-400"></i> Settings
+                            </button>
+                        </div>
+
+                        <!-- Main workspace of uploaded assets -->
+                        <div class="flex-1 overflow-y-auto pr-1 mb-3">
+                            <div id="arrange-grid" class="grid grid-cols-2 gap-3">
+                                <!-- Dynamic JS injection of grid items -->
+                            </div>
+                        </div>
+
+                        <!-- Action Toolbar -->
+                        <div class="border-t border-slate-800 pt-3 flex items-center justify-between gap-2">
+                            <button onclick="triggerFileAdd()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-plus"></i> Add
+                            </button>
+                            <button onclick="generatePdfAndPreview()" class="bg-indigo-600 hover:bg-indigo-500 text-white flex-1 py-2.5 rounded-xl text-[11px] font-bold tracking-wide flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/30">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Generate PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Screen 3: Output Preview & Download -->
+                    <div id="screen-preview" class="screen-view absolute inset-0 flex flex-col p-4 hidden">
+                        <div class="flex items-center justify-between mt-3 mb-4 border-b border-slate-800 pb-2">
+                            <button onclick="navBackToArrange()" class="text-slate-400 hover:text-slate-200 text-xs flex items-center gap-1">
+                                <i class="fa-solid fa-chevron-left"></i> Edit
+                            </button>
+                            <span class="text-xs font-semibold text-slate-300">Ready to Share</span>
+                            <div class="w-6"></div> <!-- empty spacer for symmetry -->
+                        </div>
+
+                        <!-- Large mock PDF output page slide -->
+                        <div class="flex-1 flex flex-col justify-center items-center bg-slate-950/80 rounded-2xl p-4 border border-slate-800/80 mb-4 relative overflow-hidden">
+                            <div class="bg-white text-slate-900 w-36 aspect-[1/1.41] shadow-xl rounded p-2 flex flex-col justify-between overflow-hidden relative">
+                                <div class="flex justify-between items-center border-b border-slate-200 pb-1">
+                                    <span class="text-[6px] font-bold tracking-tight text-slate-500">Page 1 of 1</span>
+                                    <i class="fa-solid fa-circle text-[4px] text-emerald-500"></i>
+                                </div>
+                                <div class="flex-1 flex items-center justify-center py-2">
+                                    <!-- Embedded preview element showing a dynamic thumbnail -->
+                                    <img id="pdf-mock-thumbnail" class="max-h-full max-w-full object-contain rounded border border-slate-100" src="" alt="Thumbnail preview">
+                                </div>
+                                <div class="flex items-center justify-between border-t border-slate-100 pt-1">
+                                    <span class="text-[5px] text-slate-400">Generated with PDFCraft Android</span>
+                                    <span class="text-[5px] font-semibold text-slate-500 uppercase" id="pdf-mock-badge-format">A4</span>
+                                </div>
+                            </div>
+
+                            <p class="text-slate-200 text-xs font-semibold mt-4 text-center truncate w-full" id="output-pdf-name">document.pdf</p>
+                            <p class="text-slate-400 text-[10px] mt-0.5" id="output-pdf-meta">A4 • Normal Margins • 3 Pages</p>
+                        </div>
+
+                        <!-- Share & Download controls -->
+                        <div class="flex flex-col gap-2">
+                            <button onclick="triggerActualPdfDownload()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all">
+                                <i class="fa-solid fa-circle-down text-sm"></i> Download Output PDF
+                            </button>
+                            <button onclick="navBackToHome()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs py-2.5 rounded-xl transition-all">
+                                <i class="fa-solid fa-house"></i> Go Back Home
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Modal Sheet: App Options & PDF Parameters -->
+                    <div id="bottom-sheet" class="absolute bottom-0 inset-x-0 bg-slate-900 border-t border-slate-800 rounded-t-[24px] z-50 p-4 transform translate-y-full transition-transform duration-300 ease-out flex flex-col">
+                        <div class="w-12 h-1 bg-slate-700 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeSettingsSheet()"></div>
+                        
+                        <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-2">
+                            <h4 class="text-xs font-bold text-slate-200">Page Settings</h4>
+                            <button onclick="closeSettingsSheet()" class="text-slate-400 hover:text-slate-200 text-xs">Save</button>
+                        </div>
+
+                        <!-- Dropdowns and sliders -->
+                        <div class="space-y-4">
+                            <!-- Page Format Selection -->
+                            <div>
+                                <label class="text-[10px] text-slate-400 block mb-1">Page Format</label>
+                                <select id="setting-page-size" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                                    <option value="A4">A4 (Portrait standard)</option>
+                                    <option value="Letter">Letter (US format)</option>
+                                    <option value="Fit">Fit Image size</option>
+                                </select>
+                            </div>
+
+                            <!-- Page Margin Options -->
+                            <div>
+                                <label class="text-[10px] text-slate-400 block mb-1">Page Margins</label>
+                                <select id="setting-page-margin" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                                    <option value="0">No Margins (Full Bleed)</option>
+                                    <option value="10">Small Margins (10mm)</option>
+                                    <option value="20">Large Margins (20mm)</option>
+                                </select>
+                            </div>
+
+                            <!-- Compression Quality Slider -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="text-[10px] text-slate-400">Compression Quality</label>
+                                    <span class="text-[10px] text-indigo-400 font-semibold" id="val-quality">80%</span>
+                                </div>
+                                <input type="range" id="setting-quality" min="10" max="100" value="80" class="w-full accent-indigo-500 bg-slate-950 rounded-lg appearance-none h-1.5" oninput="document.getElementById('val-quality').innerText = this.value + '%'">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Modal Sheet: App Information -->
+                    <div id="info-bottom-sheet" class="absolute bottom-0 inset-x-0 bg-slate-900 border-t border-slate-800 rounded-t-[24px] z-50 p-5 transform translate-y-full transition-transform duration-300 ease-out flex flex-col text-slate-300">
+                        <div class="w-12 h-1 bg-slate-700 rounded-full mx-auto mb-4 cursor-pointer" onclick="toggleInfoBottomSheet()"></div>
+                        <h4 class="text-xs font-bold text-slate-200 mb-2">About PDFCraft Emulator</h4>
+                        <p class="text-[10px] text-slate-400 leading-relaxed mb-3">
+                            This emulator models a modern, native Android app that interacts with the native Android file system. To provide complete utility, we use the client-side Web PDF engine <code class="text-indigo-400">jsPDF</code> to generate valid, download-ready documents directly inside your browser.
+                        </p>
+                        <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-[9px] text-slate-400 space-y-1">
+                            <div class="flex justify-between"><span>Android Engine:</span><span class="text-slate-200">PdfDocument API</span></div>
+                            <div class="flex justify-between"><span>Architecture:</span><span class="text-slate-200">MVVM / Compose</span></div>
+                            <div class="flex justify-between"><span>Language:</span><span class="text-slate-200">Kotlin / Java 11</span></div>
+                        </div>
+                        <button onclick="toggleInfoBottomSheet()" class="mt-4 w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs py-2 rounded-xl transition-all">
+                            Close
+                        </button>
+                    </div>
+
+                    <!-- Simulated Loading/Generating Screen Overlay -->
+                    <div id="processing-overlay" class="absolute inset-0 bg-slate-950/90 z- flex flex-col items-center justify-center p-6 hidden">
+                        <div class="relative w-16 h-16 mb-4">
+                            <!-- Circular loading indicator -->
+                            <div class="absolute inset-0 border-4 border-indigo-600/20 rounded-full"></div>
+                            <div class="absolute inset-0 border-4 border-t-indigo-500 rounded-full animate-spin"></div>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-100" id="processing-status">Structuring Assets...</p>
+                        <p class="text-[10px] text-slate-400 mt-1">Compressing images for maximum scale efficiency</p>
+                    </div>
+
+                    <!-- Simulated Toast Alerts System -->
+                    <div id="toast-notif" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-950/95 border border-slate-800/80 text-indigo-400 text-[10px] font-semibold px-4 py-2.5 rounded-full shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none text-center whitespace-nowrap z-">
+                        <i class="fa-regular fa-bell mr-1"></i> Added image to list
+                    </div>
+
+                </div>
+
+                <!-- Android Soft-Key Home Navigation Bar -->
+                <div class="h-8 shrink-0 flex items-center justify-around px-8 z-40">
+                    <button class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-slate-300" onclick="emulatorSystemBack()">
+                        <i class="fa-solid fa-chevron-left text-[11px]"></i>
+                    </button>
+                    <button class="w-3.5 h-3.5 border-2 border-slate-500 hover:border-slate-300 rounded-full" onclick="emulatorSystemHome()">
+                    </button>
+                    <button class="w-3 h-3 border-2 border-slate-500 hover:border-slate-300 rounded" onclick="showEmulatorRecentsToast()">
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Meta Bar -->
+    <footer class="bg-slate-950 border-t border-slate-800/80 px-6 py-3 flex flex-wrap justify-between items-center gap-3 text-xs text-slate-400 shrink-0">
+        <div>
+            Developed as an open-source template project using <span class="text-indigo-400 font-medium">Jetpack Compose UI</span> and <span class="text-indigo-400 font-medium">Kotlin</span>.
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="https://developer.android.com/reference/android/graphics/pdf/PdfDocument" target="_blank" class="hover:text-white transition-colors">Android PdfDocument API</a>
+            <span>•</span>
+            <span>Target SDK: 34 (Android 14)</span>
+        </div>
+    </footer>
+
+    <!-- Interactive Javascript Logic Engine -->
+    <script>
+        // Tab switching controller
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('text-slate-400', 'hover:text-slate-200');
+            });
+
+            document.getElementById(`tab-content-${tabId}`).classList.remove('hidden');
+            const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+            targetBtn.classList.remove('text-slate-400', 'hover:text-slate-200');
+            targetBtn.classList.add('bg-indigo-600', 'text-white');
+        }
+
+        // Copy source code to clipboard
+        function copyCode(elementId) {
+            const codeText = document.getElementById(elementId).innerText;
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = codeText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                document.execCommand('copy');
+                const toast = document.getElementById('copy-toast');
+                toast.classList.remove('opacity-0', 'pointer-events-none');
+                toast.classList.add('opacity-100');
+                
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100');
+                    toast.classList.add('opacity-0', 'pointer-events-none');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy code: ', err);
+            } finally {
+                document.body.removeChild(tempTextArea);
+            }
+        }
+
+        // Live Clock logic for Android Emulator Top bar
+        function updateEmulatorClock() {
+            const clockEl = document.getElementById('android-clock');
+            if (clockEl) {
+                const now = new Date();
+                let hours = now.getHours();
+                let minutes = now.getMinutes();
+                hours = hours < 10 ? '0' + hours : hours;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                clockEl.textContent = `${hours}:${minutes}`;
+            }
+        }
+        setInterval(updateEmulatorClock, 1000);
+        updateEmulatorClock();
+
+        /*
+         * EMULATOR STATE MANAGEMENT & OPERATIONS
+         */
+        let userSelectedImages = []; // Stores objects: { id, name, size, rotation (0, 90, 180, 270), src }
+        let generatedPdfBlobUrl = null;
+        let generatedPdfFileName = "document.pdf";
+
+        // Navigation Controllers
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen-view').forEach(screen => screen.classList.add('hidden'));
+            document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+        }
+
+        function triggerFileAdd() {
+            document.getElementById('emulator-file-picker').click();
+        }
+
+        function navBackToHome() {
+            showScreen('home');
+        }
+
+        function navBackToArrange() {
+            showScreen('arrange');
+        }
+
+        function emulatorSystemBack() {
+            const homeVisible = !document.getElementById('screen-home').classList.contains('hidden');
+            const arrangeVisible = !document.getElementById('screen-arrange').classList.contains('hidden');
+            const previewVisible = !document.getElementById('screen-preview').classList.contains('hidden');
+
+            if (previewVisible) {
+                navBackToArrange();
+            } else if (arrangeVisible) {
+                navBackToHome();
+            } else if (homeVisible) {
+                showToast("Already on Home Screen");
+            }
+        }
+
+        function emulatorSystemHome() {
+            navBackToHome();
+            closeSettingsSheet();
+        }
+
+        function showEmulatorRecentsToast() {
+            showToast("Multi-tasking simulated");
+        }
+
+        // Toast Popup Trigger
+        function showToast(message) {
+            const toast = document.getElementById('toast-notif');
+            toast.innerHTML = `<i class="fa-regular fa-bell mr-1"></i> ${message}`;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 2500);
+        }
+
+        // Bottom Settings Sheet toggler
+        function openSettingsSheet() {
+            const sheet = document.getElementById('bottom-sheet');
+            sheet.classList.remove('translate-y-full');
+        }
+
+        function closeSettingsSheet() {
+            const sheet = document.getElementById('bottom-sheet');
+            sheet.classList.add('translate-y-full');
+        }
+
+        function toggleInfoBottomSheet() {
+            const sheet = document.getElementById('info-bottom-sheet');
+            if (sheet.classList.contains('translate-y-full')) {
+                sheet.classList.remove('translate-y-full');
+            } else {
+                sheet.classList.add('translate-y-full');
+            }
+        }
+
+        // Process file selections
+        function handleImageSelection(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            let loadedCount = 0;
+            const targetCount = files.length;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgObj = {
+                        id: 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                        name: file.name,
+                        size: (file.size / 1024).toFixed(1) + " KB",
+                        rotation: 0,
+                        src: e.target.result
+                    };
+                    userSelectedImages.push(imgObj);
+                    loadedCount++;
+
+                    if (loadedCount === targetCount) {
+                        showToast(`Added ${targetCount} image(s)`);
+                        renderArrangementGrid();
+                        showScreen('arrange');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+            // Clear value to allow selecting same images again if deleted
+            event.target.value = '';
+        }
+
+        // Preset Sandbox Sample Generator (SVGs rendered as inline data to keep asset lightweight)
+        function loadSamplePresetImages() {
+            const mockPresets = [
+                {
+                    name: 'invoice_template.png',
+                    size: '142 KB',
+                    color: '#c7d2fe',
+                    textColor: '#312e81',
+                    title: 'TAX INVOICE',
+                    meta: 'INV-492003',
+                    details: 'Client: Android Developer\nDate: May 31, 2026\nTotal: $1,200.00'
+                },
+                {
+                    name: 'sketch_prototype.png',
+                    size: '95 KB',
+                    color: '#a7f3d0',
+                    textColor: '#064e3b',
+                    title: 'MOBILE WIREFRAME',
+                    meta: 'Home Screen Prototype',
+                    details: 'App Concept: PDFCraft\nUI Framework: Jetpack Compose\nState: Iteration 2'
+                },
+                {
+                    name: 'cover_graphic.png',
+                    size: '210 KB',
+                    color: '#fef08a',
+                    textColor: '#713f12',
+                    title: 'PROJECT BRIEF',
+                    meta: 'Image to PDF Engine',
+                    details: 'Core Features:\n- Zero-Quality Loss Compression\n- A4 Canvas Auto-Fit\n- Multi-Threaded Execution'
+                }
+            ];
+
+            const loadPromises = mockPresets.map(preset => {
+                return new Promise((resolve) => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 400;
+                    canvas.height = 560;
+                    const ctx = canvas.getContext('2d');
+
+                    // Base background
+                    ctx.fillStyle = preset.color;
+                    ctx.fillRect(0, 0, 400, 560);
+
+                    // Grid Pattern
+                    ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+                    ctx.lineWidth = 1;
+                    for (let x = 0; x < 400; x += 20) {
+                        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 560); ctx.stroke();
+                    }
+                    for (let y = 0; y < 560; y += 20) {
+                        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(400, y); ctx.stroke();
+                    }
+
+                    // Content Frame
+                    ctx.strokeStyle = preset.textColor;
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(20, 20, 360, 520);
+
+                    // Title Header
+                    ctx.fillStyle = preset.textColor;
+                    ctx.font = 'bold 24px Inter, sans-serif';
+                    ctx.fillText(preset.title, 40, 70);
+
+                    ctx.font = 'bold 12px monospace';
+                    ctx.fillText(preset.meta, 40, 95);
+
+                    // Separator line
+                    ctx.strokeStyle = preset.textColor;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(40, 115); ctx.lineTo(360, 115); ctx.stroke();
+
+                    // Text Content Box
+                    ctx.font = '14px Inter, sans-serif';
+                    const lines = preset.details.split('\n');
+                    let startY = 160;
+                    lines.forEach(line => {
+                        ctx.fillText(line, 40, startY);
+                        startY += 30;
+                    });
+
+                    // Footer branding
+                    ctx.font = 'bold 10px monospace';
+                    ctx.fillText('Android App Mock Sandbox Graphics', 40, 510);
+
+                    resolve({
+                        id: 'preset_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                        name: preset.name,
+                        size: preset.size,
+                        rotation: 0,
+                        src: canvas.toDataURL()
+                    });
+                });
+            });
+
+            Promise.all(loadPromises).then(results => {
+                userSelectedImages = [...userSelectedImages, ...results];
+                showToast("Sample presets generated");
+                renderArrangementGrid();
+                showScreen('arrange');
+            });
+        }
+
+        // Render Current Image Set on Screen 2 (Arrangement Grid)
+        function renderArrangementGrid() {
+            const grid = document.getElementById('arrange-grid');
+            const countEl = document.getElementById('arrange-count');
+            grid.innerHTML = '';
+            countEl.textContent = userSelectedImages.length;
+
+            if (userSelectedImages.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-2 text-center py-12 text-slate-500 text-xs">
+                        <i class="fa-regular fa-image text-3xl mb-2 block"></i>
+                        No images loaded.
+                    </div>
+                `;
+                return;
+            }
+
+            userSelectedImages.forEach((img, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-800 rounded-xl overflow-hidden relative border border-slate-700/60 p-1 flex flex-col justify-between";
+                
+                // Set custom rotation transformations
+                let rotClass = "";
+                if (img.rotation === 90) rotClass = "rotate-90";
+                else if (img.rotation === 180) rotClass = "rotate-180";
+                else if (img.rotation === 270) rotClass = "rotate-270";
+
+                card.innerHTML = `
+                    <div class="relative aspect-square rounded-lg overflow-hidden bg-slate-950/60 flex items-center justify-center">
+                        <img src="${img.src}" class="max-h-full max-w-full object-contain transform transition-transform duration-200 ${rotClass}" alt="User Image">
+                        <div class="absolute bottom-1 left-1 bg-slate-950/70 text-[8px] font-bold px-1.5 py-0.5 rounded text-slate-300">
+                            #${index + 1}
+                        </div>
+                    </div>
+                    
+                    <!-- File Metadata -->
+                    <div class="p-1.5 flex flex-col">
+                        <span class="text-[9px] font-semibold text-slate-200 truncate w-full" title="${img.name}">${img.name}</span>
+                        <span class="text-[8px] text-slate-400 mt-0.5">${img.size}</span>
+                    </div>
+
+                    <!-- Action Layer for this specific item -->
+                    <div class="border-t border-slate-700/50 mt-1 pt-1.5 flex justify-between gap-1 text-[10px] text-slate-400 px-1">
+                        <!-- Rotate control -->
+                        <button onclick="rotateImage('${img.id}')" class="hover:text-indigo-400 flex items-center justify-center w-6 h-6 rounded-md bg-slate-950/40">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                        </button>
+                        <!-- Move Left/Up -->
+                        <button onclick="moveImageOrder('${img.id}', -1)" ${index === 0 ? 'disabled class="opacity-30"' : 'class="hover:text-indigo-400 flex items-center justify-center w-6 h-6 rounded-md bg-slate-950/40"'}>
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                        <!-- Move Right/Down -->
+                        <button onclick="moveImageOrder('${img.id}', 1)" ${index === userSelectedImages.length - 1 ? 'disabled class="opacity-30"' : 'class="hover:text-indigo-400 flex items-center justify-center w-6 h-6 rounded-md bg-slate-950/40"'}>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <!-- Remove element -->
+                        <button onclick="deleteImage('${img.id}')" class="hover:text-rose-400 flex items-center justify-center w-6 h-6 rounded-md bg-slate-950/40">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Mutator Operations on individual images
+        function rotateImage(imgId) {
+            const index = userSelectedImages.findIndex(x => x.id === imgId);
+            if (index !== -1) {
+                userSelectedImages[index].rotation = (userSelectedImages[index].rotation + 90) % 360;
+                renderArrangementGrid();
+                showToast("Rotated Image 90°");
+            }
+        }
+
+        function deleteImage(imgId) {
+            userSelectedImages = userSelectedImages.filter(x => x.id !== imgId);
+            renderArrangementGrid();
+            showToast("Removed Image");
+            if (userSelectedImages.length === 0) {
+                navBackToHome();
+            }
+        }
+
+        function moveImageOrder(imgId, direction) {
+            const index = userSelectedImages.findIndex(x => x.id === imgId);
+            if (index === -1) return;
+
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= userSelectedImages.length) return;
+
+            // Swap items
+            const temp = userSelectedImages[index];
+            userSelectedImages[index] = userSelectedImages[targetIndex];
+            userSelectedImages[targetIndex] = temp;
+
+            renderArrangementGrid();
+        }
+
+        /*
+         * HIGH-PERFORMANCE CLIENT-SIDE PDF GENERATOR ENGINE
+         * Mimics the logic written in PdfConverter.kt using jsPDF API
+         */
+        async function generatePdfAndPreview() {
+            if (userSelectedImages.length === 0) {
+                showToast("Select at least 1 image");
+                return;
+            }
+
+            // Show simulated background thread compilation spinner
+            const overlay = document.getElementById('processing-overlay');
+            const statusText = document.getElementById('processing-status');
+            overlay.classList.remove('hidden');
+
+            statusText.innerText = "Loading Graphics...";
+            await new Promise(r => setTimeout(r, 600));
+
+            statusText.innerText = "Scaling Bitmaps...";
+            await new Promise(r => setTimeout(r, 600));
+
+            statusText.innerText = "Compiling PDF Elements...";
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                
+                // Get Settings
+                const pageSizeSet = document.getElementById('setting-page-size').value;
+                const marginSet = parseInt(document.getElementById('setting-page-margin').value);
+                const qualityValue = parseInt(document.getElementById('setting-quality').value) / 100;
+
+                // Configure standard dimension sizes
+                let formatOpt = 'a4';
+                let docWidth = 210;  // in mm
+                let docHeight = 297; // in mm
+
+                if (pageSizeSet === 'Letter') {
+                    formatOpt = 'letter';
+                    docWidth = 216;
+                    docHeight = 279;
+                }
+
+                // Initialize document structure context
+                let pdf;
+                if (pageSizeSet === 'Fit') {
+                    // Start first page with default letter layout, we will redefine width in render loop
+                    pdf = new jsPDF({ orientation: 'p', unit: 'mm' });
+                } else {
+                    pdf = new jsPDF({
+                        orientation: 'p',
+                        unit: 'mm',
+                        format: formatOpt
+                    });
+                }
+
+                // Render loop across images
+                for (let i = 0; i < userSelectedImages.length; i++) {
+                    const imgData = userSelectedImages[i];
+                    
+                    // Create an Image instance to load pixel dimensions
+                    const tempImgObj = new Image();
+                    tempImgObj.src = imgData.src;
+                    await new Promise((resolve) => { tempImgObj.onload = resolve; });
+
+                    // Create Canvas to compute rotations
+                    const rotCanvas = document.createElement('canvas');
+                    const rotCtx = rotCanvas.getContext('2d');
+
+                    if (imgData.rotation === 90 || imgData.rotation === 270) {
+                        rotCanvas.width = tempImgObj.height;
+                        rotCanvas.height = tempImgObj.width;
+                    } else {
+                        rotCanvas.width = tempImgObj.width;
+                        rotCanvas.height = tempImgObj.height;
+                    }
+
+                    // Perform precise canvas graphics coordinate translations
+                    rotCtx.translate(rotCanvas.width / 2, rotCanvas.height / 2);
+                    rotCtx.rotate((imgData.rotation * Math.PI) / 180);
+                    rotCtx.drawImage(tempImgObj, -tempImgObj.width / 2, -tempImgObj.height / 2);
+
+                    // Re-capture processed visual source base64
+                    const finalImgSrc = rotCanvas.toDataURL('image/jpeg', qualityValue);
+
+                    // If 'Fit Size' mode selected, customize layout aspect dynamically
+                    if (pageSizeSet === 'Fit') {
+                        // Maintain ratio matching A4 reference width of 210mm
+                        const scaleAspect = 210 / rotCanvas.width;
+                        docWidth = 210;
+                        docHeight = rotCanvas.height * scaleAspect;
+
+                        if (i === 0) {
+                            // Adjust layout margins of first frame
+                            pdf = new jsPDF({
+                                orientation: 'p',
+                                unit: 'mm',
+                                format: [docWidth, docHeight]
+                            });
+                        } else {
+                            pdf.addPage([docWidth, docHeight], 'p');
+                        }
+                    } else {
+                        // Standard formats (A4/Letter)
+                        if (i > 0) pdf.addPage();
+                    }
+
+                    // Layout Dimensions Accounting for Settings margin
+                    const contentWidth = docWidth - (marginSet * 2);
+                    const contentHeight = docHeight - (marginSet * 2);
+
+                    // Image Scale Logic: Keep aspect-ratio without stretching pixel maps
+                    const imgAspect = rotCanvas.width / rotCanvas.height;
+                    const pageAspect = contentWidth / contentHeight;
+
+                    let targetWidth = contentWidth;
+                    let targetHeight = contentHeight;
+
+                    if (imgAspect > pageAspect) {
+                        targetHeight = contentWidth / imgAspect;
+                    } else {
+                        targetWidth = contentHeight * imgAspect;
+                    }
+
+                    // Center inside the active page frame bounds
+                    const finalX = marginSet + (contentWidth - targetWidth) / 2;
+                    const finalY = marginSet + (contentHeight - targetHeight) / 2;
+
+                    pdf.addImage(finalImgSrc, 'JPEG', finalX, finalY, targetWidth, targetHeight);
+                }
+
+                // Output compilation result
+                const pdfBlob = pdf.output('blob');
+                if (generatedPdfBlobUrl) {
+                    URL.revokeObjectURL(generatedPdfBlobUrl);
+                }
+                generatedPdfBlobUrl = URL.createObjectURL(pdfBlob);
+                
+                // Configure dynamic preview files & metadata metrics
+                generatedPdfFileName = `PDFCraft_${Date.now().toString().slice(-6)}.pdf`;
+                document.getElementById('output-pdf-name').innerText = generatedPdfFileName;
+                
+                // Update format indicator badge
+                document.getElementById('pdf-mock-badge-format').innerText = pageSizeSet === 'Fit' ? 'Fit Image' : pageSizeSet;
+                document.getElementById('output-pdf-meta').innerText = `${pageSizeSet} Format • Margins: ${marginSet === 0 ? 'None' : marginSet + 'mm'} • ${userSelectedImages.length} Page(s)`;
+
+                // Dynamic preview thumbnail (Uses first image as thumbnail background)
+                document.getElementById('pdf-mock-thumbnail').src = userSelectedImages.src;
+
+                // Close compiling loader
+                overlay.classList.add('hidden');
+                showScreen('preview');
+                showToast("PDF Successfully Compiled");
+
+            } catch (err) {
+                console.error("PDF generation error: ", err);
+                overlay.classList.add('hidden');
+                showToast("Compilation Error: " + err.message);
+            }
+        }
+
+        // Download actual compiled binary output directly inside Browser
+        function triggerActualPdfDownload() {
+            if (!generatedPdfBlobUrl) {
+                showToast("No generated file found");
+                return;
+            }
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = generatedPdfBlobUrl;
+            downloadLink.download = generatedPdfFileName;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            showToast("Downloading Output Document");
+        }
+    </script>
+</body>
+</html>
